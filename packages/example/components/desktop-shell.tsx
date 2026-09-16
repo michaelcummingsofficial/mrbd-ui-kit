@@ -9,7 +9,7 @@ interface DesktopShellProps {
 	readmeContent: string;
 }
 
-const GITHUB_URL = "https://github.com/michaelcummings12/mrbd-ui-kit";
+const GITHUB_URL = "https://github.com/michaelcummingsofficial/mrbd-ui-kit";
 const INSTALL_URL = "https://facebook.com/fb_viewapp/web_app_deep_link?appName=mrbd-ui-kit&appUrl=https%3A%2F%2Fwww.mrbd.fun";
 const NPM_URL = "https://www.npmjs.com/package/mrbd-ui-kit";
 

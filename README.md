@@ -1,8 +1,8 @@
 # mrbd-ui-kit
 
 [![npm version](https://img.shields.io/npm/v/mrbd-ui-kit.svg)](https://www.npmjs.com/package/mrbd-ui-kit)
-[![GitHub](https://img.shields.io/github/license/michaelcummings12/mrbd-ui-kit)](https://github.com/michaelcummings12/mrbd-ui-kit/blob/main/LICENSE)
-[![GitHub stars](https://img.shields.io/github/stars/michaelcummings12/mrbd-ui-kit?style=social)](https://github.com/michaelcummings12/mrbd-ui-kit)
+[![GitHub](https://img.shields.io/github/license/michaelcummingsofficial/mrbd-ui-kit)](https://github.com/michaelcummingsofficial/mrbd-ui-kit/blob/main/LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/michaelcummingsofficial/mrbd-ui-kit?style=social)](https://github.com/michaelcummingsofficial/mrbd-ui-kit)
 
 React component library for Meta Ray-Ban Display web apps. Opinionated defaults, fully customizable.
 

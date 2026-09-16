@@ -4,7 +4,7 @@
   "description": "React component library for Meta Ray-Ban Display web apps",
   "repository": {
     "type": "git",
-    "url": "https://github.com/michaelcummings12/mrbd-ui-kit.git"
+    "url": "https://github.com/michaelcummingsofficial/mrbd-ui-kit.git"
   },
   "type": "module",
   "main": "./dist/index.cjs",
