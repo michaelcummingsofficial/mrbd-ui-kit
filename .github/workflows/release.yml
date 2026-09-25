@@ -102,6 +102,11 @@ jobs:
             Code Diff (summarized):
             ${{ steps.git_changes.outputs.diff }}
 
+      # Authenticates via npm trusted publishing (OIDC), which also attaches provenance
+      - name: Publish to NPM
+        working-directory: packages/mrbd-ui-kit
+        run: npm publish --access public
+
       - name: Create GitHub Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -111,9 +116,3 @@ jobs:
           gh release create v${{ needs.check-version.outputs.version }} \
             --notes-file release_notes.md \
             --title "v${{ needs.check-version.outputs.version }}"
-
-      - name: Publish to NPM
-        working-directory: packages/mrbd-ui-kit
-        run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
