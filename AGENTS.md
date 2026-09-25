@@ -1,5 +1,7 @@
 # AGENTS.md — AI Coding Assistant Instructions for mrbd-ui-kit
 
+> **Deprecated.** Meta now ships the official design system for Ray-Ban Display as [`@wearables-ui-toolkit/mrbd`](https://www.npmjs.com/package/@wearables-ui-toolkit/mrbd). For a new app, use the toolkit instead of this guide. This package stays installable but receives no further updates. The migration table is in [`README.md`](README.md#migrating-to-the-ui-toolkit-for-meta-ray-ban-display).
+
 You are building a web app for Meta Ray-Ban Display glasses using the `mrbd-ui-kit` component library. Follow these instructions precisely.
 
 ## What is Meta Ray-Ban Display?

@@ -11,6 +11,7 @@ interface DesktopShellProps {
 const GITHUB_URL = "https://github.com/michaelcummingsofficial/mrbd-ui-kit";
 const INSTALL_URL = "https://facebook.com/fb_viewapp/web_app_deep_link?appName=mrbd-ui-kit&appUrl=https%3A%2F%2Fwww.mrbd.fun";
 const NPM_URL = "https://www.npmjs.com/package/mrbd-ui-kit";
+const META_DOCS_URL = "https://wearables.developer.meta.com/docs/develop/webapps/design/overview/";
 
 function GitHubIcon({ className, ...props }: { "className"?: string; "aria-hidden"?: "true" }) {
 	return (
@@ -33,6 +34,19 @@ export function DesktopShell({ readmeContent }: DesktopShellProps) {
 				Skip to content
 			</a>
 			<div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(59,130,246,0.12)_0%,transparent_60%),radial-gradient(ellipse_60%_40%_at_80%_60%,rgba(139,92,246,0.06)_0%,transparent_50%)]" />
+
+			<aside
+				aria-label="Deprecation notice"
+				className="relative z-1 border-b border-amber-400/20 bg-amber-400/10 px-6 py-2.5 text-center text-sm text-amber-100">
+				mrbd-ui-kit is deprecated. Meta now ships the official toolkit.{" "}
+				<a
+					href={META_DOCS_URL}
+					target="_blank"
+					rel="noopener noreferrer"
+					className="font-semibold text-amber-300 underline underline-offset-2 hover:text-amber-200">
+					Read the docs
+				</a>
+			</aside>
 
 			<nav aria-label="Main navigation" className="sticky top-0 z-50 border-b border-white/6 bg-zinc-950/70 backdrop-blur-xl backdrop-saturate-[1.8]">
 				<div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-6">

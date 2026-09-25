@@ -1,5 +1,29 @@
 # mrbd-ui-kit
 
+> **Deprecated.** Meta now ships the official design system for Ray-Ban Display as [`@wearables-ui-toolkit/mrbd`](https://www.npmjs.com/package/@wearables-ui-toolkit/mrbd). Use it for new apps. This package stays installable but receives no further updates. See the migration notes below.
+
+## Migrating to the UI Toolkit for Meta Ray-Ban Display
+
+| mrbd-ui-kit | UI Toolkit for Meta Ray-Ban Display |
+|---|---|
+| `<DisplayRoot>` | `<App>` from `@wearables-ui-toolkit/mrbd` |
+| `<Button>` | `<Button title=… onClick=… />` |
+| `<Focusable>` | Native controls. The toolkit's `FocusNavigationProvider` handles focus. |
+| `<Card>` | `<Card>` from `@wearables-ui-toolkit/foundation` |
+| `<Pill>` | `<Chip>` or `<Tag>` |
+| `<LoadingSpinner>` | `<IndeterminateLoader>` or `<ProgressRing>` |
+| `<ScrollContainer>`, `<ScrollArea>`, `<ScrollBar>` | `<ScrollView>` |
+| `<Text>` | `<TextView>` |
+| `useBackNavigation` | `useBackNavigation` from `@wearables-ui-toolkit/foundation` |
+| `useIsMrbd`, `isMrbd`, `isMrbdServer`, `isMrbdFromHeaders` | No equivalent. Copy [`src/lib/isMrbd.ts`](https://github.com/michaelcummingsofficial/mrbd-ui-kit/blob/main/packages/mrbd-ui-kit/src/lib/isMrbd.ts) into your app. |
+| `--color-mrbd-*` tokens | `--uit-color-*` semantic tokens |
+
+The toolkit needs React 19.2.7 or later.
+
+In Next.js, skip the toolkit's React Router subpath and use the Next router.
+
+Read the [official docs](https://wearables.developer.meta.com/docs/develop/webapps/design/overview/) to get started.
+
 [![npm version](https://img.shields.io/npm/v/mrbd-ui-kit.svg)](https://www.npmjs.com/package/mrbd-ui-kit)
 [![GitHub](https://img.shields.io/github/license/michaelcummingsofficial/mrbd-ui-kit)](https://github.com/michaelcummingsofficial/mrbd-ui-kit/blob/main/LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/michaelcummingsofficial/mrbd-ui-kit?style=social)](https://github.com/michaelcummingsofficial/mrbd-ui-kit)
