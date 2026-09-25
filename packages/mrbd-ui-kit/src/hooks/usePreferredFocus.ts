@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useFocusContext } from "../components/display-root";
+import { useFocusContext } from "./useFocusContext";
 
 /**
  * Declare the preferred initial focus target for the current page/screen.

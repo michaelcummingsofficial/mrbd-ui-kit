@@ -1,5 +1,3 @@
-// No environment variables outside of this file
-
 /**
  * Environment flags
  */

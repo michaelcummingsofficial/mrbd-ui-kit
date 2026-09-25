@@ -10,7 +10,7 @@ export function Pill({ children, className }: PillProps) {
 	return (
 		<span
 			className={cn(
-				"box-trim-both box-edge-cap border-mrbd-accent/10 from-mrbd-accent/20 relative m-auto h-12 rounded-full border-t border-l bg-linear-to-b to-transparent px-4",
+				"box-trim-both box-edge-cap border-mrbd-border from-mrbd-surface-2 relative m-auto h-12 rounded-full border-t border-l bg-linear-to-b to-transparent px-4",
 				className
 			)}>
 			{children}

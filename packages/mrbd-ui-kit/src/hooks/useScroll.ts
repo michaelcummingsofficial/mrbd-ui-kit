@@ -1,13 +1,8 @@
-"use client";
-
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export interface ScrollState {
-	/** Current scroll position from top */
 	scrollTop: number;
-	/** Total scrollable height of the content */
 	scrollHeight: number;
-	/** Visible viewport height */
 	clientHeight: number;
 	/** true when scrolled past the top (content above is hidden) */
 	canScrollUp: boolean;
@@ -51,26 +46,28 @@ export function useScroll(): UseScrollReturn {
 		isScrolling: false
 	});
 
-	// Track previous scrollTop so we only set isScrolling when position actually changes
 	const prevScrollTopRef = useRef<number>(0);
 	const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const isScrollingRef = useRef<boolean>(false);
 
 	const update = useCallback(() => {
 		const el = scrollRef.current;
-		if (!el) return;
+		if (!el) {
+			return;
+		}
 
 		const { scrollTop, scrollHeight, clientHeight } = el;
 		const positionChanged = Math.abs(scrollTop - prevScrollTopRef.current) > 0;
 		prevScrollTopRef.current = scrollTop;
-
 		if (positionChanged && !isScrollingRef.current) {
 			isScrollingRef.current = true;
 		}
 
 		if (positionChanged) {
-			// Reset idle timer on every position change
-			if (idleTimerRef.current !== null) clearTimeout(idleTimerRef.current);
+			if (idleTimerRef.current !== null) {
+				clearTimeout(idleTimerRef.current);
+			}
+
 			idleTimerRef.current = setTimeout(() => {
 				isScrollingRef.current = false;
 				setState((prev) => ({ ...prev, isScrolling: false }));
@@ -90,18 +87,17 @@ export function useScroll(): UseScrollReturn {
 
 	useEffect(() => {
 		const el = scrollRef.current;
-		if (!el) return;
+		if (!el) {
+			return;
+		}
 
-		// Initial measurement
 		update();
 
-		// Track scroll events
 		el.addEventListener("scroll", update, { passive: true });
 
-		// Track content size changes (dynamic lists, images loading, etc.)
 		const resizeObserver = new ResizeObserver(update);
 		resizeObserver.observe(el);
-		// Also observe direct children for content size changes
+		// Children are observed too, so a growing list updates the metrics even when the viewport does not resize.
 		for (const child of Array.from(el.children)) {
 			resizeObserver.observe(child);
 		}
@@ -109,10 +105,11 @@ export function useScroll(): UseScrollReturn {
 		return () => {
 			el.removeEventListener("scroll", update);
 			resizeObserver.disconnect();
-			if (idleTimerRef.current !== null) clearTimeout(idleTimerRef.current);
+			if (idleTimerRef.current !== null) {
+				clearTimeout(idleTimerRef.current);
+			}
 		};
 	}, [update]);
-
 	return {
 		scrollRef,
 		...state

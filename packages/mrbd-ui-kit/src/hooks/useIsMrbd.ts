@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-
-const MRBD_UA_TOKEN = "Greatwhite";
+import { isMrbd } from "../lib/isMrbd";
 
 /**
  * Client-side hook to detect if the current device is a Meta Ray-Ban Display.
@@ -11,20 +10,13 @@ const MRBD_UA_TOKEN = "Greatwhite";
  * @example
  * ```tsx
  * const isMrbd = useIsMrbd();
- *
- * if (isMrbd) {
- *   // Render MRBD-optimized UI
- * } else {
- *   // Render standard web UI
- * }
+ * return isMrbd ? <DisplayUI /> : <StandardUI />;
  * ```
  */
 export function useIsMrbd(): boolean {
-	const [isMrbd, setIsMrbd] = useState(false);
-
+	const [isMrbdDevice, setIsMrbdDevice] = useState(false);
 	useEffect(() => {
-		setIsMrbd(navigator.userAgent.includes(MRBD_UA_TOKEN));
+		setIsMrbdDevice(isMrbd(navigator.userAgent));
 	}, []);
-
-	return isMrbd;
+	return isMrbdDevice;
 }

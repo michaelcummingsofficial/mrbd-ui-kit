@@ -29,6 +29,8 @@ export interface FocusEngine {
 	 */
 	setPreferredFocus: (id: string | null) => void;
 	getCurrentId: () => string | null;
+	/** The focused entry's element, or null. */
+	getCurrentElement: () => HTMLElement | null;
 	subscribe: (listener: (id: string | null) => void) => () => void;
 	destroy: () => void;
 }
@@ -94,7 +96,6 @@ function scoreCandidate(direction: SpatialDirection, current: Rect, candidate: R
 	const primaryDist = isVertical ? Math.abs(dy) : Math.abs(dx);
 	const offAxisDist = isVertical ? Math.abs(dx) : Math.abs(dy);
 
-	// Off-axis penalty: elements far off the movement axis are penalized
 	const OFF_AXIS_WEIGHT = 2.5;
 	return primaryDist + offAxisDist * OFF_AXIS_WEIGHT;
 }
@@ -104,25 +105,40 @@ function scoreCandidate(direction: SpatialDirection, current: Rect, candidate: R
  * e.g., if moving "right" with no candidates, wrap to the leftmost element.
  */
 function getWrapTarget(direction: SpatialDirection, entries: Array<{ id: string; rect: Rect }>): string | null {
-	if (entries.length === 0) return null;
+	if (entries.length === 0) {
+		return null;
+	}
 
 	let best = entries[0];
 	for (const entry of entries) {
 		switch (direction) {
 			case "up":
-				if (entry.rect.centerY > best.rect.centerY) best = entry;
+				if (entry.rect.centerY > best.rect.centerY) {
+					best = entry;
+				}
+
 				break;
 			case "down":
-				if (entry.rect.centerY < best.rect.centerY) best = entry;
+				if (entry.rect.centerY < best.rect.centerY) {
+					best = entry;
+				}
+
 				break;
 			case "left":
-				if (entry.rect.centerX > best.rect.centerX) best = entry;
+				if (entry.rect.centerX > best.rect.centerX) {
+					best = entry;
+				}
+
 				break;
 			case "right":
-				if (entry.rect.centerX < best.rect.centerX) best = entry;
+				if (entry.rect.centerX < best.rect.centerX) {
+					best = entry;
+				}
+
 				break;
 		}
 	}
+
 	return best.id;
 }
 
@@ -136,20 +152,18 @@ const SCROLL_MARGIN = 12;
  */
 function scrollIntoScrollContainer(element: HTMLElement) {
 	const container = findScrollParent(element);
-	if (!container) return;
+	if (!container) {
+		return;
+	}
 
 	const elRect = element.getBoundingClientRect();
 	const ctRect = container.getBoundingClientRect();
 
-	// How far off the element is from the visible area (with margin)
 	const offTop = elRect.top - ctRect.top - SCROLL_MARGIN;
 	const offBottom = elRect.bottom - ctRect.bottom + SCROLL_MARGIN;
-
 	if (offTop < 0) {
-		// Element is above visible area — scroll up
 		container.scrollBy({ top: offTop, behavior: "smooth" });
 	} else if (offBottom > 0) {
-		// Element is below visible area — scroll down
 		container.scrollBy({ top: offBottom, behavior: "smooth" });
 	}
 }
@@ -162,30 +176,28 @@ function findScrollParent(el: HTMLElement): HTMLElement | null {
 		if (/(auto|scroll)/.test(style.overflowY)) {
 			return current;
 		}
+
 		current = current.parentElement;
 	}
+
 	return null;
 }
 
 /**
- * Check whether candidates have meaningful spatial spread along the
- * movement axis.  For horizontal movement (left/right), we check if
- * candidate centerX values differ by more than a threshold.  For
- * vertical (up/down), we check centerY.
- *
- * This prevents wrap-around when all elements sit in a single column
- * (left/right wrap) or a single row (up/down wrap).
+ * Whether candidates spread along the movement axis by more than SPREAD_THRESHOLD.
+ * Without this, left/right would wrap around a single column and up/down a single row.
  */
-const SPREAD_THRESHOLD = 10; // px — elements within this distance are considered aligned
+const SPREAD_THRESHOLD = 10;
 
 function hasSpatialSpread(direction: SpatialDirection, candidates: Array<{ id: string; rect: Rect }>): boolean {
-	if (candidates.length < 2) return false;
+	if (candidates.length < 2) {
+		return false;
+	}
 
 	const isHorizontal = direction === "left" || direction === "right";
 	const values = candidates.map((c) => (isHorizontal ? c.rect.centerX : c.rect.centerY));
 	const min = Math.min(...values);
 	const max = Math.max(...values);
-
 	return max - min > SPREAD_THRESHOLD;
 }
 
@@ -229,7 +241,6 @@ export function createFocusEngine(options: FocusEngineOptions = {}): FocusEngine
 	}
 
 	function applyFocus(id: string | null, { persist = true } = {}) {
-		// Remove data-focused from previous
 		if (currentId) {
 			const prev = entries.get(currentId);
 			if (prev?.element) {
@@ -239,8 +250,6 @@ export function createFocusEngine(options: FocusEngineOptions = {}): FocusEngine
 		}
 
 		currentId = id;
-
-		// Apply data-focused to new
 		if (currentId) {
 			const next = entries.get(currentId);
 			if (next?.element) {
@@ -249,10 +258,7 @@ export function createFocusEngine(options: FocusEngineOptions = {}): FocusEngine
 				scrollIntoScrollContainer(next.element);
 			}
 
-			// Persist for route-based focus restoration.
-			// Skip during unregister cascades (persist=false) and for
-			// chrome items (autoFocus=false) so back-nav restores the
-			// last content item, not toolbar buttons.
+			// Chrome items (autoFocus=false) are not saved, so back-nav restores the last content item, not a toolbar button.
 			if (persist) {
 				const entry = entries.get(currentId);
 				if (entry?.autoFocus !== false) {
@@ -267,31 +273,33 @@ export function createFocusEngine(options: FocusEngineOptions = {}): FocusEngine
 	/** Return the first entry eligible for initial auto-focus (autoFocus !== false). */
 	function findFirstAutoFocusable(): string | undefined {
 		for (const [id, entry] of entries) {
-			if (entry.autoFocus !== false) return id;
+			if (entry.autoFocus !== false) {
+				return id;
+			}
 		}
+
 		return undefined;
 	}
 
 	function register(entry: FocusableEntry) {
 		entries.set(entry.id, entry);
-
-		// If this element is the preferred focus target, focus it immediately
 		if (preferredFocusId === entry.id) {
 			if (pendingInitialFocusFrame !== null) {
 				cancelAnimationFrame(pendingInitialFocusFrame);
 				pendingInitialFocusFrame = null;
 			}
+
 			requestAnimationFrame(() => applyFocus(entry.id));
 			return;
 		}
 
-		// Normal auto-focus: batch the decision in a single rAF so all
-		// elements can register first.
-		// Priority: preferred focus > saved focus > first auto-focusable > first entry
+		/**
+		 * Defer the initial pick one frame so every element on the page has registered.
+		 * Priority: preferred focus > saved focus > first auto-focusable > first entry.
+		 */
 		if (currentId === null && pendingInitialFocusFrame === null) {
 			pendingInitialFocusFrame = requestAnimationFrame(() => {
 				pendingInitialFocusFrame = null;
-
 				if (preferredFocusId && entries.has(preferredFocusId)) {
 					applyFocus(preferredFocusId);
 					return;
@@ -302,7 +310,9 @@ export function createFocusEngine(options: FocusEngineOptions = {}): FocusEngine
 					applyFocus(savedId);
 				} else {
 					const first = findFirstAutoFocusable() ?? entries.keys().next().value;
-					if (first) applyFocus(first);
+					if (first) {
+						applyFocus(first);
+					}
 				}
 			});
 		}
@@ -314,13 +324,11 @@ export function createFocusEngine(options: FocusEngineOptions = {}): FocusEngine
 			return;
 		}
 
-		// Cancel any pending auto-focus — preferred focus takes priority
 		if (pendingInitialFocusFrame !== null) {
 			cancelAnimationFrame(pendingInitialFocusFrame);
 			pendingInitialFocusFrame = null;
 		}
-		// If the element is already registered, focus it immediately.
-		// Otherwise register() will pick it up when the element mounts.
+
 		if (entries.has(id)) {
 			applyFocus(id);
 		}
@@ -329,45 +337,50 @@ export function createFocusEngine(options: FocusEngineOptions = {}): FocusEngine
 	function unregister(id: string) {
 		entries.delete(id);
 		if (currentId === id) {
-			// Focus first remaining entry, or null.
-			// Don't persist — this is a teardown cascade, not user intent.
+			// Not persisted: a teardown cascade is not user intent.
 			const first = entries.keys().next().value;
 			applyFocus(first ?? null, { persist: false });
 		}
 	}
 
 	function move(direction: SpatialDirection) {
-		if (entries.size === 0) return;
+		if (entries.size === 0) {
+			return;
+		}
 
-		// If nothing focused, focus the first entry
 		if (currentId === null) {
 			const first = entries.keys().next().value;
-			if (first) applyFocus(first);
+			if (first) {
+				applyFocus(first);
+			}
+
 			return;
 		}
 
 		const currentEntry = entries.get(currentId);
-		if (!currentEntry) return;
+		if (!currentEntry) {
+			return;
+		}
 
 		const currentRect = getRect(currentEntry.element);
 
-		// Build candidate list (excluding current, same group if grouped)
 		const candidates: Array<{ id: string; rect: Rect }> = [];
 		for (const [id, entry] of entries) {
-			if (id === currentId) continue;
-			// If current has a group, only consider same group
-			if (currentEntry.group && entry.group !== currentEntry.group) continue;
+			if (id === currentId) {
+				continue;
+			}
+
+			if (currentEntry.group && entry.group !== currentEntry.group) {
+				continue;
+			}
+
 			candidates.push({ id, rect: getRect(entry.element) });
 		}
 
-		// Filter to candidates in the correct direction
 		const directional = filterByDirection(direction, currentRect, candidates);
-
 		if (directional.length > 0) {
-			// Score and pick the best
 			let bestId = directional[0].id;
 			let bestScore = scoreCandidate(direction, currentRect, directional[0].rect);
-
 			for (let i = 1; i < directional.length; i++) {
 				const score = scoreCandidate(direction, currentRect, directional[i].rect);
 				if (score < bestScore) {
@@ -378,22 +391,21 @@ export function createFocusEngine(options: FocusEngineOptions = {}): FocusEngine
 
 			applyFocus(bestId);
 		} else if (wrap && hasSpatialSpread(direction, candidates)) {
-			// No candidates in direction — wrap to opposite edge, but only
-			// if elements are actually spread along the movement axis.
-			// This prevents left/right from wrapping in a purely vertical
-			// layout (and vice-versa).
+			// Wrapping only when elements spread along the axis keeps left/right from wrapping a single column.
 			const allWithRects = candidates.map((c) => ({ id: c.id, rect: c.rect }));
 			const wrapId = getWrapTarget(direction, allWithRects);
-			if (wrapId) applyFocus(wrapId);
+			if (wrapId) {
+				applyFocus(wrapId);
+			}
 		}
 	}
 
 	function focusById(id: string) {
-		// Cancel pending auto-focus — explicit focus takes priority
 		if (pendingInitialFocusFrame !== null) {
 			cancelAnimationFrame(pendingInitialFocusFrame);
 			pendingInitialFocusFrame = null;
 		}
+
 		if (entries.has(id)) {
 			applyFocus(id);
 		}
@@ -401,6 +413,10 @@ export function createFocusEngine(options: FocusEngineOptions = {}): FocusEngine
 
 	function getCurrentId() {
 		return currentId;
+	}
+
+	function getCurrentElement() {
+		return currentId ? (entries.get(currentId)?.element ?? null) : null;
 	}
 
 	function subscribe(listener: (id: string | null) => void) {
@@ -415,6 +431,7 @@ export function createFocusEngine(options: FocusEngineOptions = {}): FocusEngine
 			cancelAnimationFrame(pendingInitialFocusFrame);
 			pendingInitialFocusFrame = null;
 		}
+
 		entries.clear();
 		listeners.clear();
 		currentId = null;
@@ -428,6 +445,7 @@ export function createFocusEngine(options: FocusEngineOptions = {}): FocusEngine
 		focusById,
 		setPreferredFocus,
 		getCurrentId,
+		getCurrentElement,
 		subscribe,
 		destroy
 	};

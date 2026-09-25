@@ -1,5 +1,4 @@
 "use client";
-
 import { OPENREPLAY_PROJECT_KEY, isDevelopment } from "@/lib/config";
 import { tracker } from "@openreplay/tracker";
 import { useEffect, useRef } from "react";

@@ -22,12 +22,15 @@ export async function AdaptiveLayout({ children, readmeContent }: AdaptiveLayout
 	const isMrbd = await isMrbdServer();
 	const h = await headers();
 	const isIframeEmbed = h.get("sec-fetch-dest") === "iframe";
-
-	// MRBD hardware or embedded in the desktop iframe preview
 	if (isMrbd || isIframeEmbed) {
-		return <DisplayRoot>{children}</DisplayRoot>;
+		return (
+			<DisplayRoot>
+				<main id="main-content" className="h-full">
+					{children}
+				</main>
+			</DisplayRoot>
+		);
 	}
 
-	// Desktop browser — show the marketing shell (iframe preview is inside)
 	return <DesktopShell readmeContent={readmeContent} />;
 }

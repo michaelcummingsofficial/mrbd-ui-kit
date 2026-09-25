@@ -1,5 +1,4 @@
 "use client";
-
 import { Button, Text, usePreferredFocus } from "mrbd-ui-kit";
 import { useState } from "react";
 import { PageHeader } from "../../components/page-header";
@@ -16,7 +15,6 @@ const TINTS = [
 export default function ThemesPage() {
 	const [activeIndex, setActiveIndex] = useState(0);
 
-	// Focus the currently active tint when this page mounts
 	usePreferredFocus(`tint-color-${TINTS[activeIndex].label}`);
 
 	function applyTint(index: number) {
@@ -28,11 +26,10 @@ export default function ThemesPage() {
 		<div className="flex h-full flex-col gap-4 p-4">
 			<PageHeader title="Themes" />
 
-			<Text size="sm" className="text-gray-400">
+			<Text size="sm" className="text-mrbd-text-muted">
 				Select a color to preview the tint system
 			</Text>
 
-			{/* Color swatches */}
 			<div className="grid grid-cols-3 gap-2">
 				{TINTS.map((tint, i) => (
 					<Button
@@ -49,9 +46,8 @@ export default function ThemesPage() {
 				))}
 			</div>
 
-			{/* Preview */}
 			<div className="flex w-full flex-col gap-2">
-				<Text size="sm" className="text-gray-400">
+				<Text size="sm" className="text-mrbd-text-muted">
 					Preview
 				</Text>
 				<div className="grid grid-cols-2 gap-4">

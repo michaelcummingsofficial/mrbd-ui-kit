@@ -1,5 +1,4 @@
 "use client";
-
 import { Eye, Glasses, LayoutPanelTop, List, Paintbrush, Pointer, TextCursor } from "lucide-react";
 import { Button, ScrollContainer, Text } from "mrbd-ui-kit";
 import Link from "next/link";
@@ -19,7 +18,7 @@ function NavItem({ id, href, icon: Icon, label, className }: NavItemProps) {
 			<Link href={href}>
 				<div className="flex w-full flex-row items-center gap-4">
 					<div className="flex size-14 items-center justify-center rounded-full bg-black/50">
-						<Icon className="size-7 text-white" />
+						<Icon className="text-mrbd-text size-7" aria-hidden="true" />
 					</div>
 					<Text weight="semibold">{label}</Text>
 				</div>
@@ -49,12 +48,12 @@ export default function HomeTab() {
 		<div className="flex h-full flex-col gap-4">
 			<div className="flex flex-col items-center gap-2">
 				<div className="flex size-12 items-center justify-center rounded-full bg-linear-to-br from-blue-400 to-blue-700">
-					<Glasses className="h-full text-white" />
+					<Glasses className="text-mrbd-text h-full" aria-hidden="true" />
 				</div>
 				<Text size="lg" weight="bold">
 					mrbd-ui-kit
 				</Text>
-				<Text size="sm" className="text-gray-400">
+				<Text size="sm" className="text-mrbd-text-muted">
 					The easiest way to build an app for Meta Ray-Ban Display
 				</Text>
 			</div>

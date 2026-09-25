@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "mrbd-ui-kit — Build apps for Meta Ray-Ban Display";
+export const alt = "mrbd-ui-kit";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -17,7 +17,6 @@ export default function OpenGraphImage() {
 				gap: "32px",
 				background: "#000"
 			}}>
-			{/* Blue circle with glasses icon */}
 			<div
 				style={{
 					width: "120px",
@@ -46,7 +45,6 @@ export default function OpenGraphImage() {
 				</svg>
 			</div>
 
-			{/* Title */}
 			<div
 				style={{
 					display: "flex",

@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useRef, type ReactNode } from "react";
+import { useFocusContext } from "../hooks/useFocusContext";
 import { cn } from "../lib/cn";
-import { useFocusContext } from "./display-root";
 
 export interface FocusableProps {
 	children: ReactNode;
-	/** Unique ID for focus engine registration. Required. */
+	/** Registers the element with the focus engine. Must be unique within the `<DisplayRoot>`. */
 	id: string;
-	/** Focus group for scoped navigation */
 	group?: string;
 	/**
 	 * When false, skip this element for initial auto-focus but keep it
@@ -14,9 +13,7 @@ export interface FocusableProps {
 	 * @default true
 	 */
 	autoFocus?: boolean;
-	/** Called when this element receives focus */
 	onFocus?: () => void;
-	/** Called when this element loses focus */
 	onBlur?: () => void;
 	/** Called when select (Enter) is pressed while focused */
 	onSelect?: () => void;
@@ -29,13 +26,12 @@ export function Focusable({ children, id, group, autoFocus, onFocus, onBlur, onS
 	const { engine } = useFocusContext();
 	const elementRef = useRef<HTMLDivElement>(null);
 	const callbacksRef = useRef({ onFocus, onBlur, onSelect });
-
-	// Keep callbacks ref current without re-subscribing
 	callbacksRef.current = { onFocus, onBlur, onSelect };
 
-	// Register/unregister with focus engine
 	useEffect(() => {
-		if (disabled || !elementRef.current) return;
+		if (disabled || !elementRef.current) {
+			return;
+		}
 
 		engine.register({ id, element: elementRef.current, group, autoFocus });
 		return () => {
@@ -43,9 +39,10 @@ export function Focusable({ children, id, group, autoFocus, onFocus, onBlur, onS
 		};
 	}, [engine, id, group, autoFocus, disabled]);
 
-	// Subscribe to focus changes for callbacks
 	useEffect(() => {
-		if (disabled) return;
+		if (disabled) {
+			return;
+		}
 
 		let wasFocused = false;
 
@@ -54,30 +51,28 @@ export function Focusable({ children, id, group, autoFocus, onFocus, onBlur, onS
 			if (isFocused && !wasFocused) {
 				callbacksRef.current.onFocus?.();
 			}
+
 			if (!isFocused && wasFocused) {
 				callbacksRef.current.onBlur?.();
 			}
+
 			wasFocused = isFocused;
 		});
-
 		return unsubscribe;
 	}, [engine, id, disabled]);
 
-	// Handle Enter key for onSelect
 	const handleKeyDown = useCallback(
 		(e: React.KeyboardEvent) => {
 			if (e.key === "Enter" && !disabled) {
 				e.preventDefault();
 				e.stopPropagation();
 				callbacksRef.current.onSelect?.();
-				// Click the first child element (or the wrapper itself as fallback).
 				const target = (elementRef.current?.firstElementChild ?? elementRef.current) as HTMLElement | null;
 				target?.click();
 			}
 		},
 		[disabled]
 	);
-
 	return (
 		<div
 			ref={elementRef}

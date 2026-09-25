@@ -1,14 +1,11 @@
-"use client";
-
 import type { ReactNode } from "react";
-import { useScroll } from "../hooks/use-scroll";
+import { useScroll } from "../hooks/useScroll";
 import { cn } from "../lib/cn";
 import { ScrollArea } from "./scroll-area";
 import { ScrollBar } from "./scroll-bar";
 
 export interface ScrollContainerProps {
 	children: ReactNode;
-	/** Additional classes on the outer flex-row wrapper */
 	className?: string;
 }
 
@@ -37,7 +34,6 @@ export interface ScrollContainerProps {
  */
 export function ScrollContainer({ children, className }: ScrollContainerProps) {
 	const scroll = useScroll();
-
 	return (
 		<div className={cn("flex min-h-0 flex-1 flex-row gap-2", className)}>
 			<ScrollArea scrollRef={scroll.scrollRef} canScrollUp={scroll.canScrollUp} canScrollDown={scroll.canScrollDown}>

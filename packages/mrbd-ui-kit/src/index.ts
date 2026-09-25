@@ -1,9 +1,7 @@
-// Components — Primitives
 export { DisplayRoot } from "./components/display-root";
 export { Focusable } from "./components/focusable";
 export { Text } from "./components/text";
 
-// Components — Composites
 export { Button } from "./components/button";
 export { Card } from "./components/card";
 export { LoadingSpinner } from "./components/loading-spinner";
@@ -12,14 +10,14 @@ export { ScrollArea } from "./components/scroll-area";
 export { ScrollBar } from "./components/scroll-bar";
 export { ScrollContainer } from "./components/scroll-container";
 
-// Hooks
-export { useFocusManager } from "./hooks/use-focus-manager";
-export { useIsMrbd } from "./hooks/use-is-mrbd";
-export { usePreferredFocus } from "./hooks/use-preferred-focus";
-export { useScroll } from "./hooks/use-scroll";
-export { useSpatialInput } from "./hooks/use-spatial-input";
+export { useBackNavigation } from "./hooks/useBackNavigation";
+export { useFocusManager } from "./hooks/useFocusManager";
+export { useIsMrbd } from "./hooks/useIsMrbd";
+export { usePreferredFocus } from "./hooks/usePreferredFocus";
+export { useScroll } from "./hooks/useScroll";
+export { useSpatialInput } from "./hooks/useSpatialInput";
+export { isBackNavigationKey } from "./lib/isBackNavigationKey";
 
-// Types — Components
 export type { ButtonProps } from "./components/button";
 export type { CardProps } from "./components/card";
 export type { DisplayRootProps } from "./components/display-root";
@@ -31,10 +29,9 @@ export type { ScrollBarProps } from "./components/scroll-bar";
 export type { ScrollContainerProps } from "./components/scroll-container";
 export type { TextProps } from "./components/text";
 
-// Types — Hooks
-export type { FocusManager } from "./hooks/use-focus-manager";
-export type { ScrollState, UseScrollReturn } from "./hooks/use-scroll";
-export type { SpatialInputKey, SpatialInputState, UseSpatialInputOptions } from "./hooks/use-spatial-input";
+export type { BackNavigationHandler } from "./hooks/useBackNavigation";
+export type { FocusManager } from "./hooks/useFocusManager";
+export type { ScrollState, UseScrollReturn } from "./hooks/useScroll";
+export type { SpatialInputKey, SpatialInputState, UseSpatialInputOptions } from "./hooks/useSpatialInput";
 
-// Types — Focus Engine
-export type { FocusEngineOptions, SpatialDirection } from "./focus/engine";
+export type { FocusEngineOptions, SpatialDirection } from "./focus/createFocusEngine";

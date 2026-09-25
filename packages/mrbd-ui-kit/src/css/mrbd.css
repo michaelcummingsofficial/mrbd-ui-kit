@@ -3,15 +3,75 @@
 @source "../../dist";
 
 @theme {
-  /* Accent color */
-  --color-mrbd-accent: #ffffff;
+	/* The one variable to theme. Every surface, border, and glow derives from it. */
+	--color-mrbd-accent: #ffffff;
 
-  /* Text color */
-  --color-mrbd-text: rgba(255, 255, 255, 0.92);
+	/* Backgrounds. Black renders as transparent on the additive display. */
+	--color-mrbd-background: #000000;
+	--color-mrbd-surface-1: color-mix(in srgb, var(--color-mrbd-accent) 10%, transparent);
+	--color-mrbd-surface-2: color-mix(in srgb, var(--color-mrbd-accent) 20%, transparent);
+	--color-mrbd-surface-3: color-mix(in srgb, var(--color-mrbd-accent) 30%, transparent);
 
-  /* Focus glow */
-  --shadow-mrbd-glow: inset -2px -2px 12px 6px color-mix(in srgb, var(--color-mrbd-accent) 40%, transparent), inset 0 0 18px 12px color-mix(in srgb, var(--color-mrbd-accent) 10%, transparent);
+	/* Borders. "Targeted" is the focused or hovered state. */
+	--color-mrbd-border: color-mix(in srgb, var(--color-mrbd-accent) 10%, transparent);
+	--color-mrbd-border-targeted: color-mix(in srgb, var(--color-mrbd-accent) 40%, transparent);
 
-  /* Default transition easing */
-  --default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+	/* Text. Never pure white: it ghosts on the display. */
+	--color-mrbd-text: rgba(255, 255, 255, 0.92);
+	--color-mrbd-text-muted: rgba(255, 255, 255, 0.6);
+	--color-mrbd-on-accent: #000000;
+
+	/* Status */
+	--color-mrbd-danger: #f87171;
+
+	/* Accent palette, tuned bright enough to read on an additive display. */
+	--color-mrbd-palette-blue: #60a5fa;
+	--color-mrbd-palette-cyan: #22d3ee;
+	--color-mrbd-palette-teal: #2dd4bf;
+	--color-mrbd-palette-green: #4ade80;
+	--color-mrbd-palette-yellow: #facc15;
+	--color-mrbd-palette-orange: #fb923c;
+	--color-mrbd-palette-red: #f87171;
+	--color-mrbd-palette-rose: #fb7185;
+	--color-mrbd-palette-pink: #f472b6;
+	--color-mrbd-palette-purple: #c084fc;
+	--color-mrbd-palette-violet: #a78bfa;
+	--color-mrbd-palette-indigo: #818cf8;
+	--color-mrbd-palette-gray: #d4d4d8;
+
+	/* Glows. Inner glow fills the targeted element; the ring travels with focus. */
+	--shadow-mrbd-glow:
+		inset -2px -2px 12px 6px color-mix(in srgb, var(--color-mrbd-accent) 40%, transparent),
+		inset 0 0 18px 12px color-mix(in srgb, var(--color-mrbd-accent) 10%, transparent);
+	--shadow-mrbd-glow-ring:
+		0 0 0 2px color-mix(in srgb, var(--color-mrbd-accent) 70%, transparent), 0 0 16px 4px color-mix(in srgb, var(--color-mrbd-accent) 35%, transparent);
+
+	--default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/*
+ * A glow stroke painted only on the border: a radial highlight offset to the top left,
+ * 1px at rest. Set --mrbd-glow-stroke-width and --mrbd-glow-stroke-opacity on the
+ * targeted state to brighten it, e.g. group-focus:[--mrbd-glow-stroke-width:3px].
+ */
+@utility mrbd-glow-stroke {
+	position: relative;
+
+	&::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		pointer-events: none;
+		border: var(--mrbd-glow-stroke-width, 1px) solid transparent;
+		background: radial-gradient(ellipse 62.5% 90.5% at 26% -9%, var(--color-mrbd-accent) 0%, transparent 100%) border-box;
+		mask:
+			linear-gradient(#fff 0 0) padding-box,
+			linear-gradient(#fff 0 0);
+		mask-composite: exclude;
+		opacity: var(--mrbd-glow-stroke-opacity, 0.6);
+		transition:
+			opacity 150ms var(--default-transition-timing-function),
+			border-width 150ms var(--default-transition-timing-function);
+	}
 }

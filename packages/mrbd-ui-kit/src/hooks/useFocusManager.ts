@@ -1,13 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
-import { useFocusContext } from "../components/display-root";
-import type { SpatialDirection } from "../focus/engine";
+import type { SpatialDirection } from "../focus/createFocusEngine";
+import { useFocusContext } from "./useFocusContext";
 
 export interface FocusManager {
-	/** Move focus in a direction */
 	move: (direction: SpatialDirection) => void;
-	/** Focus a specific element by ID */
 	focus: (id: string) => void;
-	/** Currently focused element ID, or null */
 	focusedId: string | null;
 }
 
@@ -35,6 +32,5 @@ export function useFocusManager(): FocusManager {
 		},
 		[engine]
 	);
-
 	return { move, focus, focusedId };
 }

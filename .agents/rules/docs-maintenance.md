@@ -1,7 +1,3 @@
----
-trigger: always_on
----
-
 Whenever you make a change that touches the public surface of `mrbd-ui-kit`, you **must** update both `AGENTS.md` and `README.md` in the same session. Leaving them out of sync with the implementation is a bug.
 
 ## What counts as a public-surface change

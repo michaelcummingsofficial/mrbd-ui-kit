@@ -20,7 +20,6 @@ export interface SlotProps extends HTMLAttributes<HTMLElement> {
  */
 export function Slot({ children, className, ...slotProps }: SlotProps) {
 	const child = Children.only(children);
-
 	if (!isValidElement(child)) {
 		throw new Error("<Slot> requires a single valid React element as its child.");
 	}
@@ -29,12 +28,9 @@ export function Slot({ children, className, ...slotProps }: SlotProps) {
 	// (isValidElement narrows to ReactElement<unknown> which makes props opaque).
 	const typedChild = child as ReactElement<Record<string, unknown>>;
 	const childProps = typedChild.props;
-
 	return cloneElement(typedChild, {
-		// Slot props are applied first; child props win on conflict
 		...slotProps,
 		...childProps,
-		// className is merged (slot first, child second)
 		className: cn(className, childProps.className as string | undefined)
 	});
 }

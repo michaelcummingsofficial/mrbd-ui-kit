@@ -1,6 +1,5 @@
 "use client";
-
-import { Check, Star, Trash2, X } from "lucide-react";
+import { Check, Sparkles, Star, Trash2, X } from "lucide-react";
 import { Button, Text } from "mrbd-ui-kit";
 import { PageHeader } from "../../components/page-header";
 
@@ -9,9 +8,8 @@ export default function ButtonsPage() {
 		<div className="flex h-full flex-col gap-4 p-4">
 			<PageHeader title="Buttons" />
 
-			{/* Variants */}
 			<div className="flex flex-col gap-2">
-				<Text size="sm" className="text-gray-400">
+				<Text size="sm" className="text-mrbd-text-muted">
 					Variants
 				</Text>
 				<div className="flex flex-row flex-wrap gap-2">
@@ -24,15 +22,17 @@ export default function ButtonsPage() {
 					<Button id="btn-ghost" variant="ghost" size="sm" icon={X}>
 						Ghost
 					</Button>
+					<Button id="btn-glow" variant="glow" size="sm" icon={Sparkles}>
+						Glow
+					</Button>
 					<Button id="btn-danger" variant="danger" size="sm" icon={Trash2}>
 						Danger
 					</Button>
 				</div>
 			</div>
 
-			{/* Sizes */}
 			<div className="flex flex-col gap-2">
-				<Text size="sm" className="text-gray-400">
+				<Text size="sm" className="text-mrbd-text-muted">
 					Sizes
 				</Text>
 				<div className="flex flex-row items-center gap-2">
@@ -48,9 +48,8 @@ export default function ButtonsPage() {
 				</div>
 			</div>
 
-			{/* States */}
 			<div className="flex flex-col gap-2">
-				<Text size="sm" className="text-gray-400">
+				<Text size="sm" className="text-mrbd-text-muted">
 					States
 				</Text>
 				<div className="flex flex-row gap-2">

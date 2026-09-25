@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { isBackNavigationKey } from "../lib/isBackNavigationKey";
 
-export type SpatialInputKey = "up" | "down" | "left" | "right" | "select";
+export type SpatialInputKey = "up" | "down" | "left" | "right" | "select" | "back";
 
 export interface SpatialInputState {
 	/** The key currently being held, or null */
@@ -10,11 +11,8 @@ export interface SpatialInputState {
 }
 
 export interface UseSpatialInputOptions {
-	/** Called on any spatial input key press */
 	onPress?: (key: SpatialInputKey) => void;
-	/** Called on key release */
 	onRelease?: (key: SpatialInputKey) => void;
-	/** Disable the hook */
 	disabled?: boolean;
 }
 
@@ -26,6 +24,10 @@ const KEY_MAP: Record<string, SpatialInputKey> = {
 	Enter: "select"
 };
 
+function toSpatialInputKey(event: KeyboardEvent): SpatialInputKey | undefined {
+	return KEY_MAP[event.key] ?? (isBackNavigationKey(event) ? "back" : undefined);
+}
+
 export function useSpatialInput(options: UseSpatialInputOptions = {}): SpatialInputState {
 	const { disabled = false } = options;
 	const [state, setState] = useState<SpatialInputState>({
@@ -33,38 +35,46 @@ export function useSpatialInput(options: UseSpatialInputOptions = {}): SpatialIn
 		lastKey: null
 	});
 
-	// Use ref for callbacks to avoid re-attaching listeners on every render
+	// Callbacks live in a ref so the window listeners attach once instead of on every render.
 	const callbacksRef = useRef(options);
 	callbacksRef.current = options;
 
 	const handleKeyDown = useCallback((e: KeyboardEvent) => {
-		const key = KEY_MAP[e.key];
-		if (!key) return;
+		const key = toSpatialInputKey(e);
+		if (!key) {
+			return;
+		}
 
-		e.preventDefault();
+		// Back is left unclaimed so useBackNavigation and DisplayRoot still see it.
+		if (key !== "back") {
+			e.preventDefault();
+		}
+
 		setState((prev) => ({ activeKey: key, lastKey: key }));
 		callbacksRef.current.onPress?.(key);
 	}, []);
 
 	const handleKeyUp = useCallback((e: KeyboardEvent) => {
-		const key = KEY_MAP[e.key];
-		if (!key) return;
+		const key = toSpatialInputKey(e);
+		if (!key) {
+			return;
+		}
 
 		setState((prev) => ({ ...prev, activeKey: null }));
 		callbacksRef.current.onRelease?.(key);
 	}, []);
 
 	useEffect(() => {
-		if (disabled) return;
+		if (disabled) {
+			return;
+		}
 
 		window.addEventListener("keydown", handleKeyDown);
 		window.addEventListener("keyup", handleKeyUp);
-
 		return () => {
 			window.removeEventListener("keydown", handleKeyDown);
 			window.removeEventListener("keyup", handleKeyUp);
 		};
 	}, [disabled, handleKeyDown, handleKeyUp]);
-
 	return state;
 }

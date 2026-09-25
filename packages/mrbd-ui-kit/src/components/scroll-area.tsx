@@ -1,5 +1,3 @@
-"use client";
-
 import type { ReactNode } from "react";
 import { cn } from "../lib/cn";
 
@@ -7,11 +5,8 @@ export interface ScrollAreaProps {
 	children: ReactNode;
 	/** Ref from useScroll() — attach to the scrollable inner container */
 	scrollRef: React.RefObject<HTMLDivElement | null>;
-	/** Whether the user has scrolled past the top */
 	canScrollUp: boolean;
-	/** Whether there is more content below the viewport */
 	canScrollDown: boolean;
-	/** Additional classes on the outer wrapper */
 	className?: string;
 }
 
@@ -38,23 +33,18 @@ export interface ScrollAreaProps {
 export function ScrollArea({ children, scrollRef, canScrollUp, canScrollDown, className }: ScrollAreaProps) {
 	return (
 		<div className={cn("relative min-h-0 flex-1", className)}>
-			{/* Top fade gradient — appears when scrolled down */}
 			<div
 				className={cn(
-					"pointer-events-none absolute inset-x-0 top-0 z-10 h-10 bg-linear-to-t from-transparent to-black transition-opacity duration-200",
+					"to-mrbd-background pointer-events-none absolute inset-x-0 top-0 z-10 h-10 bg-linear-to-t from-transparent transition-opacity duration-200",
 					canScrollUp ? "opacity-100" : "opacity-0"
 				)}
 			/>
-
-			{/* Scrollable content */}
 			<div ref={scrollRef} className="size-full scrollbar-none overflow-x-hidden overflow-y-auto p-2">
 				{children}
 			</div>
-
-			{/* Bottom fade gradient — appears when more content below */}
 			<div
 				className={cn(
-					"pointer-events-none absolute inset-x-0 bottom-0 z-10 h-10 bg-linear-to-b from-transparent to-black transition-opacity duration-200",
+					"to-mrbd-background pointer-events-none absolute inset-x-0 bottom-0 z-10 h-10 bg-linear-to-b from-transparent transition-opacity duration-200",
 					canScrollDown ? "opacity-100" : "opacity-0"
 				)}
 			/>

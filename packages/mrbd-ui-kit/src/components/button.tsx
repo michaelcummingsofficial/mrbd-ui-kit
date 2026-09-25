@@ -5,13 +5,12 @@ import { Slot } from "./slot";
 
 export interface ButtonProps {
 	children: ReactNode;
-	/** @default 'primary' */
-	variant?: "primary" | "secondary" | "ghost" | "danger";
+	/** @default 'secondary' */
+	variant?: "primary" | "secondary" | "ghost" | "glow" | "danger";
 	/** @default 'md' */
 	size?: "sm" | "md" | "lg";
-	/** Required — used for focus engine registration */
+	/** Registers the button with the focus engine. Must be unique within the `<DisplayRoot>`. */
 	id: string;
-	/** Icon to render before children */
 	icon?: ComponentType<{ className?: string }>;
 	/** When false, skip this button for initial auto-focus.
 	 * @default true */
@@ -20,9 +19,7 @@ export interface ButtonProps {
 	disabled?: boolean;
 	/** Called on select (Enter key) */
 	onClick?: () => void;
-	/** Called when this element receives focus */
 	onFocus?: () => void;
-	/** Called when this element loses focus */
 	onBlur?: () => void;
 	/** Called when select (Enter) is pressed while focused (alias for onClick) */
 	onSelect?: () => void;
@@ -43,11 +40,13 @@ export interface ButtonProps {
 }
 
 const VARIANT_CLASSES: Record<NonNullable<ButtonProps["variant"]>, string> = {
-	primary: "bg-mrbd-accent/90 text-black",
+	primary: "bg-mrbd-accent/90 text-mrbd-on-accent",
 	secondary:
-		"border-l-2 border-t-2 border-mrbd-accent/10 hover:border-mrbd-accent/40 group-focus:border-mrbd-accent/40 bg-mrbd-accent/20 text-mrbd-text",
-	ghost: "bg-transparent text-mrbd-text group-focus:bg-mrbd-accent/20",
-	danger: "bg-red-400/85 text-black"
+		"border-mrbd-border hover:border-mrbd-border-targeted group-focus:border-mrbd-border-targeted bg-mrbd-surface-2 text-mrbd-text border-t-2 border-l-2",
+	ghost: "text-mrbd-text group-focus:bg-mrbd-surface-2 bg-transparent",
+	glow:
+		"mrbd-glow-stroke bg-mrbd-surface-1 text-mrbd-text hover:[--mrbd-glow-stroke-opacity:0.7] hover:[--mrbd-glow-stroke-width:3px] group-focus:[--mrbd-glow-stroke-opacity:0.7] group-focus:[--mrbd-glow-stroke-width:3px]",
+	danger: "bg-mrbd-danger/85 text-mrbd-on-accent"
 };
 
 const SIZE_CLASSES: Record<NonNullable<ButtonProps["size"]>, string> = {
@@ -85,12 +84,10 @@ export function Button({
 		disabled && "pointer-events-none opacity-40",
 		className
 	);
-
 	return (
 		<Focusable id={id} autoFocus={autoFocus} onSelect={onSelect ?? onClick} onFocus={onFocus} onBlur={onBlur} disabled={disabled} className="group">
 			{asChild ? (
-				// Slot merges resolvedClass onto the single child element (e.g. <Link>).
-				// Must be exactly one child — no icon expression here.
+				// Slot needs exactly one child, so `icon` is not rendered here.
 				<Slot className={resolvedClass}>{children}</Slot>
 			) : (
 				<button className={resolvedClass}>

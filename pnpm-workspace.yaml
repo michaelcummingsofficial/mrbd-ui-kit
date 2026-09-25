@@ -1,6 +1,15 @@
 packages:
-  - "packages/*"
+ - "packages/*"
+
+# allowBuilds is the pnpm 11+ spelling; onlyBuiltDependencies is kept for pnpm 10
+# (Vercel selects its pnpm version from the lockfile and may still run 10).
+# Both must stay in sync — without them, esbuild and sharp never build.
 allowBuilds:
-  esbuild: true
-  sharp: true
-  unrs-resolver: true
+ esbuild: true
+ sharp: true
+ unrs-resolver: true
+
+onlyBuiltDependencies:
+ - esbuild
+ - sharp
+ - unrs-resolver

@@ -27,6 +27,18 @@ Add the theme and base styles to your app's global CSS:
 
 This single import provides Tailwind v4 theme tokens (colors, shadows), focus ring styles, scrollbar hiding, transition defaults, and [`tailwindcss-text-box-trim`](https://www.npmjs.com/package/tailwindcss-text-box-trim) utilities for pixel-perfect typographic spacing.
 
+### Required meta tags
+
+Meta's shell looks for two tags in your document `<head>`. In Next.js, export them from your root layout:
+
+```tsx
+// app/layout.tsx
+export const metadata = { other: { "mrbd-web-app-capable": "yes" } };
+export const viewport = { width: 600, height: 600, initialScale: 1, userScalable: false };
+```
+
+If the same app also serves phones or desktops, return the 600×600 viewport only for the glasses with `generateViewport()` and `isMrbdServer()`.
+
 ### Font Configuration
 
 The UI kit ships with no default font bundled to keep your application lightweight. We highly recommend using a clear, bold sans-serif font family. 
@@ -82,7 +94,7 @@ export default function App() {
     <DisplayRoot>
       <div className="flex flex-col gap-4 p-6">
         <Text size="lg" weight="bold">Hello, Display</Text>
-        <Text className="text-gray-400">Glanceable UI for your glasses.</Text>
+        <Text className="text-mrbd-text-muted">Glanceable UI for your glasses.</Text>
 
         <Button id="action-btn" variant="primary" icon={Check} onClick={() => console.log("pressed!")}>
           Get Started
@@ -118,6 +130,7 @@ Required root wrapper. Sets up the 600×600 viewport, focus engine context, and 
 <DisplayRoot
   focusOptions={{ wrap: true }}
   onSelect={(focusedId) => console.log("selected:", focusedId)}
+  onBack={() => console.log("back")}
 >
   {children}
 </DisplayRoot>
@@ -127,6 +140,8 @@ Required root wrapper. Sets up the 600×600 viewport, focus engine context, and 
 |---|---|---|---|
 | `focusOptions` | `FocusEngineOptions` | `{ wrap: true }` | Configure focus wrapping |
 | `onSelect` | `(id: string) => void` | — | Called on Enter/select while an element is focused |
+| `onBack` | `() => boolean \| void` | `history.back()` | Called on a desktop Back key (`Escape`, `Backspace`, `BrowserBack`, `GoBack`). Return `false` to fall through to `history.back()`. See [Navigation and Back](#navigation-and-back) |
+| `focusGlow` | `boolean` | `true` | One glow ring that travels between focused elements. Set `false` to rely on each element's own focus style |
 | `className` | `string` | — | Additional classes for the root div |
 
 #### `<Text>`
@@ -135,7 +150,7 @@ Display-optimized typography with enforced minimum font weight. Applies `box-tri
 
 ```tsx
 <Text size="lg" weight="bold">Important Message</Text>
-<Text size="sm" className="text-gray-400">Secondary info</Text>
+<Text size="sm" className="text-mrbd-text-muted">Secondary info</Text>
 ```
 
 | Prop | Type | Default | Description |
@@ -194,7 +209,7 @@ The `asChild` prop merges button styles onto a child element instead of renderin
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
-| `variant` | `'primary' \| 'secondary' \| 'ghost' \| 'danger'` | `'ghost'` | Visual style |
+| `variant` | `'primary' \| 'secondary' \| 'ghost' \| 'glow' \| 'danger'` | `'secondary'` | Visual style. `glow` draws a thin glow stroke on the border that brightens and widens when targeted |
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | Button size |
 | `id` | `string` | **required** | Focus engine ID |
 | `icon` | `ComponentType` | — | Icon component before label |
@@ -216,7 +231,7 @@ Content container with rounded corners and subtle tint-derived background. Good 
 <Card className="mt-auto">Pushed to bottom</Card>
 <Card className="flex flex-col gap-1">
   <div className="flex flex-row justify-between">
-    <Text size="sm" className="text-gray-400">Status</Text>
+    <Text size="sm" className="text-mrbd-text-muted">Status</Text>
     <Text size="sm" weight="semibold">Active</Text>
   </div>
 </Card>
@@ -343,16 +358,54 @@ const scroll = useScroll();
 | `isScrolling` | `boolean` | `false` | Show/hide the scrollbar |
 | `className` | `string` | — | Additional classes |
 
+## Navigation and Back
+
+The glasses have one Back gesture: a middle-finger tap on the Neural Band, or a two-finger tap on the temple touchpad. It never reaches your page as a key. The shell checks browser history and calls `history.back()` when there is an entry to go to. With no entry it opens the system menu instead. That means navigation has to live in browser history, which Next.js routing already does for you.
+
+- Push a history entry for every screen the user would expect Back to reverse. The shell allows five entries in total, including the first page, so do not spend them on focus changes or tooltips.
+- Do not add an on-screen Back button. The gesture is the affordance.
+- On a desktop browser, `Escape`, `Backspace`, `BrowserBack`, and `GoBack` stand in for the gesture. `<DisplayRoot>` listens for them and calls `history.back()`, so desktop and device behave the same.
+
+To undo something without leaving the page, such as closing a menu or clearing a selection, use `useBackNavigation()`. Return `false` when there is nothing to undo and `<DisplayRoot>` falls through to `history.back()`:
+
+```tsx
+const [menuOpen, setMenuOpen] = useState(false);
+
+useBackNavigation(() => {
+  if (!menuOpen) {
+    return false;
+  }
+  setMenuOpen(false);
+});
+```
+
+This runs for the desktop aliases only. A menu that must also close on the device gesture should push a history entry when it opens and close on `popstate`.
+
+`isBackNavigationKey(event)` is exported for custom widgets that handle their own keys. `Backspace` does not count while the target is a text field.
+
 ## Hooks
 
 ### `useSpatialInput()`
 
-Subscribe to spatial input events (arrow keys + Enter from Neural Band or temple touch).
+Subscribe to spatial input events. Keys are `'up' | 'down' | 'left' | 'right' | 'select' | 'back'`. `back` fires for the desktop Back aliases and is left unclaimed so `useBackNavigation()` and `<DisplayRoot>` still see it.
 
 ```tsx
 const { activeKey, lastKey } = useSpatialInput({
   onPress: (key) => console.log("pressed:", key),
   onRelease: (key) => console.log("released:", key),
+});
+```
+
+### `useBackNavigation()`
+
+Handle a desktop Back key before `<DisplayRoot>` does. Return `false` to decline. See [Navigation and Back](#navigation-and-back).
+
+```tsx
+useBackNavigation(() => {
+  if (selectedItem === null) {
+    return false;
+  }
+  setSelectedItem(null);
 });
 ```
 
@@ -479,22 +532,54 @@ The entire color palette is driven by a single CSS variable: **`--color-mrbd-acc
 }
 ```
 
-All surface colors, glows, and border tints are derived from this variable via opacity modifiers. Changing `--color-mrbd-accent` automatically updates:
-- `bg-mrbd-accent/90` (primary button)
-- `bg-mrbd-accent/10` (secondary button)
-- `shadow-mrbd-glow` value
-- Border tints on `Button`, `Pill`, etc.
+Every surface, border, and glow token below is derived from this variable with `color-mix()`, so one line rethemes the whole kit. Override any single token the same way when you need to.
 
 ## Tailwind Theme Tokens
 
-When you import `mrbd-ui-kit/css/theme`, these Tailwind utilities become available:
+When you import `mrbd-ui-kit/css`, these Tailwind utilities become available. Use them with any color utility (`bg-`, `text-`, `border-`, `from-`) and with opacity modifiers.
 
-### Colors
-- `bg-mrbd-accent` — The tint color (default white); use with opacity modifiers like `bg-mrbd-accent/10`
-- `text-mrbd-text` — Primary text (white at 92% — not pure white)
+### Surfaces
 
-### Shadows (Outer Glow)
-- `shadow-mrbd-glow` — Inner glow (used by Button hover/focus)
+| Token | Derived from | Used by |
+|---|---|---|
+| `mrbd-background` | `#000` | `<DisplayRoot>`, scroll fades. Black is transparent on the display |
+| `mrbd-surface-1` | accent at 10% | `glow` button fill, inset areas |
+| `mrbd-surface-2` | accent at 20% | `<Card>`, `<Pill>`, `secondary` and focused `ghost` buttons |
+| `mrbd-surface-3` | accent at 30% | Elevated surfaces, `<ScrollBar>` track |
+
+### Borders
+
+| Token | Derived from | Used by |
+|---|---|---|
+| `mrbd-border` | accent at 10% | Resting borders on `<Card>`, `<Pill>`, `secondary` buttons |
+| `mrbd-border-targeted` | accent at 40% | The same borders when focused or hovered |
+
+### Text
+
+| Token | Value | Use |
+|---|---|---|
+| `mrbd-text` | white at 92% | Primary text. Never pure white |
+| `mrbd-text-muted` | white at 60% | Labels and secondary copy |
+| `mrbd-on-accent` | `#000` | Text on `primary` and `danger` buttons |
+| `mrbd-danger` | `#f87171` | Destructive actions |
+
+### Palette
+
+Thirteen accents tuned for the additive display, for charts, tags, and per-item color: `mrbd-palette-blue`, `-cyan`, `-teal`, `-green`, `-yellow`, `-orange`, `-red`, `-rose`, `-pink`, `-purple`, `-violet`, `-indigo`, `-gray`. Point `--color-mrbd-accent` at one of them to theme the app:
+
+```css
+:root {
+  --color-mrbd-accent: var(--color-mrbd-palette-teal);
+}
+```
+
+### Glows
+
+| Utility | What it draws |
+|---|---|
+| `shadow-mrbd-glow` | Inner glow that fills the targeted element. `<Button>` applies it on focus and hover |
+| `shadow-mrbd-glow-ring` | Outer ring. `<DisplayRoot>` moves one of these between focused elements |
+| `mrbd-glow-stroke` | A 1px glow painted only on the border, brightest at the top left. Set `--mrbd-glow-stroke-width` and `--mrbd-glow-stroke-opacity` on the targeted state, as the `glow` button variant does |
 
 
 ## Localization (i18n)
@@ -515,7 +600,7 @@ RTL locales (such as Arabic and Hebrew) are supported out of the box:
 ## Design Guidelines
 
 1. **Never use pure white (`#FFFFFF`)** — It causes ghosting on additive displays. Use `text-mrbd-text` (92% opacity white) instead.
-2. **Never use drop shadows** — They look like dirt on the lens. Use outer glows (`shadow-mrbd-glow`).
+2. **Never use drop shadows** — They look like dirt on the lens. Use the glow utilities (`shadow-mrbd-glow`, `shadow-mrbd-glow-ring`, `mrbd-glow-stroke`).
 3. **Keep it glanceable** — Users scan in under 2 seconds. Prioritize hierarchy and brevity.
 4. **Right-anchor important content** — The display is monocular (right eye). Use F-pattern layouts.
 5. **Use bold fonts** — Minimum `font-weight: 500`. Thin fonts are illegible on the display.

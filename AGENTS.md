@@ -13,9 +13,10 @@ These are NOT suggestions. Violating them creates a broken experience on the har
 ### DO:
 
 - Use `<DisplayRoot>` as the outermost wrapper for all MRBD UI
-- Use dark/transparent backgrounds (`bg-mrbd-accent/5`)
-- Use `text-mrbd-text` for primary text (92% white, NOT pure white)
-- Use `shadow-mrbd-glow` for emphasis effects (inner glow)
+- Add `<meta name="mrbd-web-app-capable" content="yes">` and a `width=600, height=600` viewport to the document head (see Project Setup)
+- Use the semantic tokens: `bg-mrbd-surface-1/2/3` for surfaces, `border-mrbd-border` for borders, `text-mrbd-text` for primary text (92% white, NOT pure white), `text-mrbd-text-muted` for labels
+- Use the glow utilities for emphasis: `shadow-mrbd-glow` (inner), `shadow-mrbd-glow-ring` (outer ring), `mrbd-glow-stroke` (border stroke)
+- Keep navigation in browser history so the Back gesture works. Never add an on-screen Back button (see Navigation and Back)
 - Use `font-weight: 500` or higher for all text
 - Use `Nunito` (or a fallback like `Noto Sans` for CJK/Thai/etc.) bold sans-serif font (weights 500+)
 - Keep layouts right-anchored or F-pattern (display is in the right lens)
@@ -28,7 +29,7 @@ These are NOT suggestions. Violating them creates a broken experience on the har
 ### NEVER:
 
 - Use `#FFFFFF` or `rgb(255,255,255)` — causes ghosting. Use `text-mrbd-text` instead
-- Use `drop-shadow` or `box-shadow` for decorative shadows — looks like dirt on lens. Use `shadow-mrbd-glow`
+- Use `drop-shadow` or `box-shadow` for decorative shadows — looks like dirt on lens. Use the glow utilities
 - Use `font-weight` below 500 — illegible on additive display
 - Use mouse/touch event handlers as primary interaction — use spatial input events
 - Create scrollable content without focus management — spatial input can't scroll
@@ -50,6 +51,15 @@ npm install mrbd-ui-kit
 ```
 
 This single import provides Tailwind v4 theme tokens (colors, shadows), focus ring styles, scrollbar hiding, transition defaults, and [`tailwindcss-text-box-trim`](https://www.npmjs.com/package/tailwindcss-text-box-trim) utilities (`box-trim-*`, `box-edge-*`) for pixel-perfect typographic spacing.
+
+### Required meta tags (app/layout.tsx)
+
+```tsx
+export const metadata = { other: { "mrbd-web-app-capable": "yes" } };
+export const viewport = { width: 600, height: 600, initialScale: 1, userScalable: false };
+```
+
+If the app also serves phones or desktops, return the 600×600 viewport only for the glasses using `generateViewport()` and `isMrbdServer()`.
 
 ## Architecture
 
@@ -74,7 +84,10 @@ import {
 import { Check, Home, Search, Settings } from "lucide-react";
 
 // Hooks
-import { useSpatialInput, useFocusManager, usePreferredFocus, useIsMrbd, useScroll } from "mrbd-ui-kit";
+import { useSpatialInput, useFocusManager, usePreferredFocus, useBackNavigation, useIsMrbd, useScroll } from "mrbd-ui-kit";
+
+// Utilities
+import { isBackNavigationKey } from "mrbd-ui-kit";
 
 // Server-side device detection (no "use client")
 import { isMrbd, isMrbdFromHeaders } from "mrbd-ui-kit/server";
@@ -108,7 +121,7 @@ Root wrapper. Required. Sets up the 600×600 viewport, focus engine context, and
 </DisplayRoot>
 ```
 
-Props: `children`, `className?`, `focusOptions?: { wrap?: boolean }`, `onSelect?: (id: string) => void`
+Props: `children`, `className?`, `focusOptions?: { wrap?: boolean }`, `onSelect?: (id: string) => void`, `onBack?: () => boolean | void` (desktop Back keys; return `false` to fall through to the default `history.back()`), `focusGlow?: boolean` (default `true`, one glow ring that travels between focused elements)
 
 ### Text
 
@@ -116,7 +129,7 @@ Display-optimized typography. Enforces minimum font weight. Applies `box-trim-bo
 
 ```tsx
 <Text size="lg" weight="bold">Title</Text>
-<Text size="sm" className="text-gray-400">Subtitle</Text>
+<Text size="sm" className="text-mrbd-text-muted">Subtitle</Text>
 ```
 
 Props: `children`, `size?: 'sm' | 'md' | 'lg'`, `weight?: 'medium' | 'semibold' | 'bold'`, `as?: 'p' | 'span' | 'h1' | 'h2' | 'h3' | 'label'`, `dir?: 'ltr' | 'rtl' | 'auto'` (default `'auto'`), `className?`
@@ -157,7 +170,7 @@ The `asChild` prop merges button styles onto a child element (e.g. `<Link>`):
 </Button>
 ```
 
-Props: `id: string` (required), `children`, `variant?: 'primary' | 'secondary' | 'ghost' | 'danger'` (default `'ghost'`), `size?: 'sm' | 'md' | 'lg'`, `icon?: ComponentType`, `autoFocus?: boolean` (default `true`), `onClick?: () => void`, `onFocus?: () => void`, `onBlur?: () => void`, `onSelect?: () => void`, `disabled?: boolean`, `asChild?: boolean`, `className?`
+Props: `id: string` (required), `children`, `variant?: 'primary' | 'secondary' | 'ghost' | 'glow' | 'danger'` (default `'secondary'`; `glow` draws a border glow stroke that brightens when targeted), `size?: 'sm' | 'md' | 'lg'`, `icon?: ComponentType`, `autoFocus?: boolean` (default `true`), `onClick?: () => void`, `onFocus?: () => void`, `onBlur?: () => void`, `onSelect?: () => void`, `disabled?: boolean`, `asChild?: boolean`, `className?`
 
 ### Card
 
@@ -168,7 +181,7 @@ Content container with rounded corners and subtle tint-derived background. Good 
 <Card className="mt-auto">Pushed to bottom</Card>
 <Card className="flex flex-col gap-1">
   <div className="flex flex-row justify-between">
-    <Text size="sm" className="text-gray-400">Status</Text>
+    <Text size="sm" className="text-mrbd-text-muted">Status</Text>
     <Text size="sm" weight="semibold">Active</Text>
   </div>
 </Card>
@@ -262,15 +275,47 @@ const scroll = useScroll();
 
 Props: `scrollHeight: number`, `clientHeight: number`, `scrollTop: number`, `isScrolling?: boolean`, `className?`
 
+## Navigation and Back
+
+The Back gesture (middle-finger tap on the Neural Band, two-finger tap on the touchpad) never reaches the page as a key. The shell calls `history.back()` when browser history has an entry, and opens the system menu when it does not. So:
+
+- Keep navigation in browser history. Next.js routing does this. For in-page screens, `history.pushState` when they open and render from `popstate`.
+- The shell allows five history entries in total, including the first page. Spend them on screens, not on focus changes or tooltips.
+- Do not add an on-screen Back button.
+- On desktop, `Escape`, `Backspace`, `BrowserBack`, and `GoBack` stand in for the gesture. `<DisplayRoot>` handles them and calls `history.back()` by default.
+- To undo in-page state (close a menu, clear a selection), use `useBackNavigation()` and return `false` when there is nothing to undo. It runs for the desktop aliases only. State that must also survive the device gesture needs a history entry.
+
+```tsx
+useBackNavigation(() => {
+  if (!menuOpen) {
+    return false;
+  }
+  setMenuOpen(false);
+});
+```
+
 ## Hooks
 
 ### useSpatialInput()
 
 ```tsx
 const { activeKey, lastKey } = useSpatialInput({
-  onPress: (key) => {},   // 'up' | 'down' | 'left' | 'right' | 'select'
+  onPress: (key) => {},   // 'up' | 'down' | 'left' | 'right' | 'select' | 'back'
   onRelease: (key) => {},
   disabled: false,
+});
+```
+
+### useBackNavigation()
+
+Handle a desktop Back key before `<DisplayRoot>` does. Return `false` to decline so `<DisplayRoot>` calls `history.back()`. See Navigation and Back.
+
+```tsx
+useBackNavigation(() => {
+  if (selectedItem === null) {
+    return false;
+  }
+  setSelectedItem(null);
 });
 ```
 
@@ -354,17 +399,24 @@ The entire color palette is driven by a single CSS variable: `--color-mrbd-accen
 }
 ```
 
-All surface colors, accent, glows, and border tints are derived from this variable via `color-mix()`. Changing `--color-mrbd-accent` automatically updates everything.
+All surface, border, and glow tokens are derived from this variable via `color-mix()`. Changing `--color-mrbd-accent` automatically updates everything. The palette below gives you display-safe values to point it at, e.g. `--color-mrbd-accent: var(--color-mrbd-palette-teal)`.
 
 ## Tailwind Tokens Available After Import
 
 ### Colors
-`mrbd-accent`, `mrbd-text`
+- Accent: `mrbd-accent`, `mrbd-on-accent` (text on accent fills)
+- Surfaces: `mrbd-background` (black, transparent on device), `mrbd-surface-1` (accent 10%), `mrbd-surface-2` (20%), `mrbd-surface-3` (30%)
+- Borders: `mrbd-border` (10%), `mrbd-border-targeted` (40%, focused or hovered)
+- Text: `mrbd-text` (92% white), `mrbd-text-muted` (60% white)
+- Status: `mrbd-danger`
+- Palette: `mrbd-palette-blue`, `-cyan`, `-teal`, `-green`, `-yellow`, `-orange`, `-red`, `-rose`, `-pink`, `-purple`, `-violet`, `-indigo`, `-gray`
 
-### Shadows
-`mrbd-glow`
+### Glows
+- `shadow-mrbd-glow`: inner glow that fills the targeted element
+- `shadow-mrbd-glow-ring`: outer ring, moved between focused elements by `<DisplayRoot>`
+- `mrbd-glow-stroke`: 1px glow on the border; set `--mrbd-glow-stroke-width` and `--mrbd-glow-stroke-opacity` on the targeted state
 
-Use as: `bg-mrbd-accent/10`, `text-mrbd-text`, `shadow-mrbd-glow`
+Use as: `bg-mrbd-surface-2`, `border-mrbd-border`, `text-mrbd-text-muted`, `shadow-mrbd-glow`
 
 ## Full App Example
 
@@ -399,7 +451,7 @@ export default function MyMRBDApp() {
         <Card>
           <div className="flex flex-col gap-2">
             <Text weight="semibold">New message from Alex</Text>
-            <Text size="sm" className="text-gray-400">
+            <Text size="sm" className="text-mrbd-text-muted">
               Hey, are you free for lunch?
             </Text>
           </div>

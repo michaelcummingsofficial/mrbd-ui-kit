@@ -20,8 +20,8 @@ const clientConfig: Options = {
 // Server-side bundles (no 'use client' banner)
 const serverConfig: Options = {
 	entry: {
-		"server/is-mrbd": "src/server/is-mrbd.ts",
-		"next/is-mrbd": "src/next/is-mrbd.ts"
+		"server/index": "src/server/index.ts",
+		"next/index": "src/next/index.ts"
 	},
 	format: ["esm", "cjs"],
 	dts: !isWatch,

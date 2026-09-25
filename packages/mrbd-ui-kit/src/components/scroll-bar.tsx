@@ -1,20 +1,14 @@
-"use client";
-
 import { cn } from "../lib/cn";
 
 export interface ScrollBarProps {
-	/** Total scrollable height of the content (scrollHeight) */
 	scrollHeight: number;
-	/** Visible viewport height (clientHeight) */
 	clientHeight: number;
-	/** Current scroll position (scrollTop) */
 	scrollTop: number;
 	/**
 	 * Whether the user is actively scrolling and the position is changing.
 	 * When false the bar fades out. Comes from `useScroll().isScrolling`.
 	 */
 	isScrolling?: boolean;
-	/** Additional classes on the outer track */
 	className?: string;
 }
 
@@ -29,20 +23,21 @@ export interface ScrollBarProps {
  * the bar only appears while the scroll position is actively changing.
  */
 export function ScrollBar({ scrollHeight, clientHeight, scrollTop, isScrolling = false, className }: ScrollBarProps) {
-	// Nothing to scroll — hide entirely
-	if (scrollHeight <= clientHeight) return null;
+	if (scrollHeight <= clientHeight) {
+		return null;
+	}
 
-	const trackHeight = 112; // h-28 = 7rem = 112px
+	// Matches the h-28 track below; the thumb math needs the pixel value.
+	const trackHeight = 112;
 	const ratio = clientHeight / scrollHeight;
-	const thumbHeight = Math.max(ratio * trackHeight, 20); // min 20px
+	const thumbHeight = Math.max(ratio * trackHeight, 20);
 	const maxScroll = scrollHeight - clientHeight;
 	const scrollFraction = maxScroll > 0 ? scrollTop / maxScroll : 0;
 	const thumbOffset = scrollFraction * (trackHeight - thumbHeight);
-
 	return (
 		<div
 			className={cn(
-				"bg-mrbd-accent/30 relative h-28 w-2 shrink-0 self-center rounded-full transition-opacity duration-300 ease-in-out",
+				"bg-mrbd-surface-3 relative h-28 w-2 shrink-0 self-center rounded-full transition-opacity duration-300 ease-in-out",
 				isScrolling ? "opacity-100" : "opacity-0",
 				className
 			)}

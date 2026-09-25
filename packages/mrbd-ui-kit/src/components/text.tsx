@@ -7,7 +7,7 @@ export interface TextProps {
 	size?: "sm" | "md" | "lg";
 	/** @default 'medium'. Minimum 500 weight — thin fonts are illegible on additive displays. */
 	weight?: "medium" | "semibold" | "bold";
-	/** HTML element to render as. @default 'span' */
+	/** @default 'span' */
 	as?: "p" | "span" | "h1" | "h2" | "h3" | "label";
 	/** Text direction. Use 'auto' to let the browser detect from content, or specify 'ltr' or 'rtl'. @default 'auto' */
 	dir?: "ltr" | "rtl" | "auto";

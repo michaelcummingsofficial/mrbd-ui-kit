@@ -1,5 +1,4 @@
 "use client";
-
 import { isDevelopment } from "@/lib/config";
 import { Analytics } from "@vercel/analytics/next";
 import { OpenReplay } from "./openreplay";

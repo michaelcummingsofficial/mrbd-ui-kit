@@ -1,25 +1,29 @@
 "use client";
-
-import { Button, Card, Text, usePreferredFocus } from "mrbd-ui-kit";
+import { Button, Card, Text, useBackNavigation, usePreferredFocus } from "mrbd-ui-kit";
 import { useState } from "react";
 import { PageHeader } from "../../components/page-header";
 
 export default function FocusPage() {
-	const [selectedItem, setSelectedItem] = useState("item-5");
+	const [selectedItem, setSelectedItem] = useState<string | null>("item-5");
 	const [lastFocused, setLastFocused] = useState<string | null>(null);
 
-	// Focus the selected item on mount
 	usePreferredFocus(selectedItem);
+	// Back clears the selection first. With nothing selected it declines, and DisplayRoot goes back a page.
+	useBackNavigation(() => {
+		if (selectedItem === null) {
+			return false;
+		}
 
+		setSelectedItem(null);
+	});
 	return (
 		<div className="flex h-full flex-col gap-4 p-4">
 			<PageHeader title="Focus" />
 
-			<Text size="sm" className="text-gray-400">
-				Select an item — it becomes the preferred focus target
+			<Text size="sm" className="text-mrbd-text-muted">
+				Select an item to make it the preferred focus target. Back clears it.
 			</Text>
 
-			{/* Focusable grid */}
 			<div className="grid grid-cols-3 gap-3">
 				{Array.from({ length: 9 }, (_, i) => {
 					const id = `item-${i + 1}`;
@@ -40,10 +44,9 @@ export default function FocusPage() {
 				})}
 			</div>
 
-			{/* Status */}
 			<Card className="mt-auto">
 				<div className="flex flex-row justify-between">
-					<Text size="sm" className="text-gray-400">
+					<Text size="sm" className="text-mrbd-text-muted">
 						Focused
 					</Text>
 					<Text size="sm" weight="semibold">
@@ -51,11 +54,11 @@ export default function FocusPage() {
 					</Text>
 				</div>
 				<div className="flex flex-row justify-between">
-					<Text size="sm" className="text-gray-400">
+					<Text size="sm" className="text-mrbd-text-muted">
 						Preferred
 					</Text>
 					<Text size="sm" weight="semibold" className="text-mrbd-accent">
-						{selectedItem}
+						{selectedItem ?? "none"}
 					</Text>
 				</div>
 			</Card>
